@@ -30,12 +30,14 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Hash password before saving, only if it was modified
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+// Hash password before saving, only if it was modified.
+// Note: Mongoose 9 removed the callback-style "next" parameter for async
+// pre-hooks — the hook just needs to be an async function that completes
+// (or throws) on its own, without calling next().
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  next();
 });
 
 // Instance method to compare plaintext password with hashed one
