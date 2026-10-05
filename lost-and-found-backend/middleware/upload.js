@@ -1,29 +1,20 @@
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("../config/cloudinary");
 
-const uploadDir = path.join(__dirname, "..", "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    cb(null, `item-${uniqueSuffix}${ext}`);
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "lost-and-found", // all uploads land in this Cloudinary folder
+    allowed_formats: ["jpg", "jpeg", "png", "webp", "gif"],
+    // Cloudinary auto-generates a unique public_id, so no filename collisions
   },
 });
 
 const fileFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|webp|gif/;
-  const isValidExt = allowedTypes.test(path.extname(file.originalname).toLowerCase());
   const isValidMime = allowedTypes.test(file.mimetype);
-
-  if (isValidExt && isValidMime) {
+  if (isValidMime) {
     cb(null, true);
   } else {
     cb(new Error("Only image files (jpeg, jpg, png, webp, gif) are allowed"));

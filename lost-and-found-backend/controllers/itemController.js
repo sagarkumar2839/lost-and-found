@@ -77,7 +77,7 @@ exports.createItem = async (req, res) => {
     // Otherwise fall back to an imageUrl passed in the body (e.g. external URL).
     let image = req.body.imageUrl || "";
     if (req.file) {
-      image = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+      image = req.file.path;
     }
 
     const item = await Item.create({
